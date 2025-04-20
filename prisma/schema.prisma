@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  password      String
+  name          String?      // Added as an optional field
+  websites      Website[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  accounts      Account[]    // Required by Prisma Adapter
+  sessions      Session[]    // Required by Prisma Adapter
+}
+
+model Website {
+  id          String      @id @default(uuid())
+  url         String
+  status      Status      @default(pending)
+  lastChecked DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  uptimeLogs  UptimeLog[]
+}
+
+model UptimeLog {
+  id            String   @id @default(uuid())
+  status        Status   
+  timestamp     DateTime @default(now())
+  responseTime  Int?
+  websiteId     String
+  website       Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade) // Added onDelete: Cascade
+}
+
+model Account {
+  id                String   @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum Status {
+  up
+  down
+  pending
+}
