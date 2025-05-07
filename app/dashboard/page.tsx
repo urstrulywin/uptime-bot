@@ -5,6 +5,10 @@ import prisma from "@/lib/db";
 import AddWebsiteForm from "./AddWebsiteForm";
 import { redirect } from "next/navigation";
 import { pingWebsites } from "@/lib/ping";
+import SignOutButton from "./SignOutButton";  
+import { Delete } from "lucide-react";
+import DeleteAccountButton from "./DeleteAccountButton";
+import WebsiteCardGrid from "./WebsiteCardGrid";
 
 let hasRun = false;
 
@@ -52,14 +56,9 @@ export default async function Dashboard() {
               <span className="text-sm text-gray-400">
                 Logged in as: {session.user.email}
               </span>
-              <form action="/api/auth/signout" method="POST">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-200 transition-colors shadow-md"
-                >
-                  Sign Out
-                </button>
-              </form>
+              
+              <SignOutButton />
+              <DeleteAccountButton />
             </div>
           </div>
         </header>
@@ -73,8 +72,14 @@ export default async function Dashboard() {
           </div>
 
           {/* Websites Table Card */}
-          <div className="rounded-xl border border-gray-700/30 bg-gray-800/50 backdrop-blur-sm shadow-lg">
+          {/* <div className="rounded-xl border border-gray-700/30 bg-gray-800/50 backdrop-blur-sm shadow-lg">
             <WebsitesTable initialWebsites={websites} userId={session.user.id} />
+          </div> */}
+
+          {/* Website Card Grid */}
+          <div className="rounded-xl border border-gray-700/30 bg-gray-800/50 backdrop-blur-sm shadow-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-100">Your Websites</h2>
+            <WebsiteCardGrid initialWebsites={websites} userId={session.user.id} />
           </div>
         </main>
       </div>
