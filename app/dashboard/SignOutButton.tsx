@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback } from "react";
 import { signOut } from "next-auth/react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 export default function SignOutButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,6 @@ export default function SignOutButton() {
 
   return (
     <div className="relative">
-      <Toaster position="top-right" toastOptions={{ className: "bg-gray-700/80 text-red-300 border border-red-900/50" }} />
       {showConfirm ? (
         <div className="flex items-center gap-2">
           <p className="text-sm text-gray-300">Are you sure?</p>
