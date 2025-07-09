@@ -3,47 +3,65 @@ import axios from "axios";
 import { Status } from "@prisma/client";
 
 export const pingWebsites = async (): Promise<void> => {
+  console.log("Starting ping job at:", new Date().toISOString());
+
   try {
-    console.log("Starting ping job at:", new Date().toISOString());
-
     const websites = await prisma.website.findMany();
+    if (websites.length === 0) {
+      console.log("No websites to ping.");
+      return;
+    }
 
-    for (const website of websites) {
+    const pingPromises = websites.map(async (website) => {
       let responseStatus: Status = Status.down;
       let responseTime: number | null = null;
 
       try {
         const start = Date.now();
         const response = await axios.get(website.url, {
-          timeout: 2000,
-          validateStatus: () => true,
+          timeout: 2000, // 2s timeout
+          validateStatus: () => true, // Accept all status codes
         });
         responseTime = Date.now() - start;
-        responseStatus = response.status < 400 ? "up" : "down";
+        responseStatus = response.status < 400 ? Status.up : Status.down;
       } catch (error) {
-        console.error(`Ping failed for ${website.url}:`, (error as any).message);
+        console.error(`Ping failed for ${website.url}:`, error instanceof Error ? error.message : error);
       }
 
-      await prisma.website.update({
-        where: { id: website.id },
-        data: {
-          status: responseStatus,
-          lastChecked: new Date(),
-          updatedAt: new Date(),
-        },
-      });
+      return {
+        websiteId: website.id,
+        responseStatus,
+        responseTime,
+        timestamp: new Date(),
+      };
+    });
 
-      await prisma.uptimeLog.create({
-        data: {
-          status: responseStatus,
-          responseTime,
-          websiteId: website.id,
-          timestamp: new Date(),
-        },
-      });
-    }
+    const pingResults = await Promise.all(pingPromises);
 
-    console.log("Ping job completed for all websites.");
+    const transactionPromises = pingResults.map((result) =>
+      prisma.$transaction([
+        prisma.website.update({
+          where: { id: result.websiteId },
+          data: {
+            status: result.responseStatus,
+            lastChecked: result.timestamp,
+            updatedAt: result.timestamp,
+          },
+        }),
+        prisma.uptimeLog.create({
+          data: {
+            status: result.responseStatus,
+            responseTime: result.responseTime,
+            websiteId: result.websiteId,
+            timestamp: result.timestamp,
+          },
+        }),
+      ])
+    );
+
+    await Promise.all(transactionPromises);
+
+    console.log(`Ping job completed for ${websites.length} websites.`);
   } catch (error) {
     console.error("Error during ping process:", error);
     throw error;

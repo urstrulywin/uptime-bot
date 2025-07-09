@@ -4,15 +4,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function Home() {
-  // Get the session on the server
   const session = await getServerSession(authOptions);
 
-  // Redirect authenticated users to /dashboard
   if (session) {
     redirect("/dashboard");
   }
 
-  // Render UI for unauthenticated users
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-black">
       <div className="max-w-md w-full mx-auto p-8 rounded-xl shadow-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/30">
