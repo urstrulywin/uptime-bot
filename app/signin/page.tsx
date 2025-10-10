@@ -1,5 +1,5 @@
 "use client";
-
+import { useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useCallback, useRef } from "react";
@@ -67,9 +67,13 @@ export default function SignIn() {
     [isLoading, router]
   );
 
-  // Redirect authenticated users
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+  }, [status, router]);
+
   if (status === "authenticated") {
-    router.push("/dashboard");
     return null;
   }
 
