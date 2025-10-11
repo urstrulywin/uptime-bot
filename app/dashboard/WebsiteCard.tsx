@@ -30,6 +30,12 @@ const WebsiteCard = ({ website, onDelete }: WebsiteCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  // Use the latest log if available, otherwise default to the top-level status
+  const latestLog = website.uptimeLogs.length > 0 ? website.uptimeLogs[0] : null;
+  const currentStatus = latestLog?.status || website.status;
+  const currentResponseTime = latestLog?.responseTime || null;
+  const currentLastChecked = latestLog?.timestamp || website.lastChecked;
+
   const getStatusIcon = (status: Status) => {
     if (status === Status.up) {
       return (
@@ -69,19 +75,18 @@ const WebsiteCard = ({ website, onDelete }: WebsiteCardProps) => {
   };
 
   const getStatusBadge = (status: Status, responseTime?: number | null) => {
-    if (status === Status.up) {
-      return (
-        <span className="inline-flex items-center px-2 py-1 rounded-md bg-green-900/20 text-green-300 border border-green-800/30 text-sm">
-          UP {responseTime != null && `• ${responseTime}ms`}
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center px-2 py-1 rounded-md bg-red-900/20 text-red-300 border border-red-800/30 text-sm">
-          DOWN {responseTime != null && `• ${responseTime}ms`}
-        </span>
-      );
-    }
+    // Determine the styling based on the status
+    const isUp = status === Status.up;
+    const colorClasses = isUp ? 'bg-green-900/20 text-green-300 border border-green-800/30' : 'bg-red-900/20 text-red-300 border border-red-800/30';
+    const statusText = isUp ? 'UP' : 'DOWN';
+
+    return (
+      <span className={`inline-flex items-center px-2 py-1 rounded-md text-sm ${colorClasses}`}>
+        {statusText}
+        {/* Only display response time if the status is UP and a response time exists */}
+        {isUp && responseTime != null && ` • ${responseTime}ms`}
+      </span>
+    );
   };
 
   const getResponseTimeColor = (responseTime: number | null) => {
@@ -115,12 +120,12 @@ const WebsiteCard = ({ website, onDelete }: WebsiteCardProps) => {
   return (
     <div
       className={`rounded-xl border border-gray-700/30 ${
-        website.status === Status.up ? "bg-gray-800/50" : "bg-red-900/5"
+        currentStatus === Status.up ? "bg-gray-800/50" : "bg-red-900/5"
       } shadow-lg transition-all duration-200 hover:shadow-xl hover:border-gray-600/50`}
     >
       <div className="flex flex-row items-center justify-between p-4">
         <div className="flex items-center gap-2">
-          {getStatusIcon(website.status)}
+          {getStatusIcon(currentStatus)}
           <div>
             <h3 className="text-lg font-medium text-gray-100 truncate max-w-[160px] sm:max-w-[220px]">
               {getDomain(website.url)}
@@ -172,8 +177,9 @@ const WebsiteCard = ({ website, onDelete }: WebsiteCardProps) => {
       </div>
       <div className="px-4 pb-3">
         <div className="flex justify-between items-center">
-          <div>{getStatusBadge(website.status, website.lastChecked ? website.uptimeLogs[0]?.responseTime : null)}</div>
-          {website.lastChecked && (
+          <div>{getStatusBadge(currentStatus, currentResponseTime)}</div>
+          {/* <div>{getStatusBadge(website.status, website.lastChecked ? website.uptimeLogs[0]?.responseTime : null)}</div> */}
+          {currentLastChecked && (
             <div className="flex items-center text-xs text-gray-400">
               <svg
                 className="h-3 w-3 mr-1"
@@ -189,7 +195,7 @@ const WebsiteCard = ({ website, onDelete }: WebsiteCardProps) => {
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 ></path>
               </svg>
-              <span>{formatDistanceToNow(new Date(website.lastChecked), { addSuffix: true })}</span>
+              <span>{formatDistanceToNow(new Date(currentLastChecked), { addSuffix: true })}</span>
             </div>
           )}
         </div>

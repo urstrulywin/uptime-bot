@@ -6,7 +6,7 @@ import AddWebsiteForm from "./AddWebsiteForm";
 import WebsiteCardGrid from "./WebsiteCardGrid";
 import SignOutButton from "./SignOutButton";
 import DeleteAccountButton from "./DeleteAccountButton";
-
+// import { unstable_noStore as noStore } from 'next/cache';
 import { Status } from "@prisma/client";
 
 interface UptimeLog {
@@ -28,6 +28,7 @@ interface Website {
 
 async function getWebsites(userId: string): Promise<{ websites: Website[]; error: string | null }> {
   try {
+    // noStore(); // Bypass the cache and force a dynamic fetch on every request
     const websites = await prisma.website.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -38,7 +39,18 @@ async function getWebsites(userId: string): Promise<{ websites: Website[]; error
         },
       },
     });
-    return { websites, error: null };
+    // const updatedWebsites = websites.map(website => {
+    //     // If there's an uptime log, use its status as the most current status
+    //     if (website.uptimeLogs && website.uptimeLogs.length > 0) {
+    //         return {
+    //             ...website,
+    //             status: website.uptimeLogs[0].status,
+    //             lastChecked: website.uptimeLogs[0].timestamp,
+    //         };
+    //     }
+    //     return website;
+    // });
+    return { websites : websites, error: null };
   } catch (error) {
     console.error("Failed to fetch websites:", error);
     return { websites: [], error: "Unable to load websites. Please try again." };
@@ -93,4 +105,4 @@ export default async function Dashboard() {
 }
 
 // Enable Incremental Static Regeneration (ISR)
-export const revalidate = 60; // Revalidate every 60 seconds
+// export const revalidate = 60; // Revalidate every 60 seconds
