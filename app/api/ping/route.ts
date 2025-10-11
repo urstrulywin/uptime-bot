@@ -4,11 +4,14 @@ import { pingWebsites } from "@/lib/ping";
 export async function GET() {
   try {
     await pingWebsites();
-    return NextResponse.json({ success: true, timestamp: new Date().toISOString() });
+    return NextResponse.json(
+      { success: true, message: "Website ping job completed successfully." },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Ping job failed:", error);
     return NextResponse.json(
-      { error: "Ping job failed", details: error instanceof Error ? error.message : "Unknown error" },
+      { success: false, message: "Website ping job failed.", error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
