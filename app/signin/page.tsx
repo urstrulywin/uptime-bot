@@ -18,7 +18,7 @@ const validateForm = ({ email, password }: SignInForm) => {
 };
 
 export default function SignIn() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

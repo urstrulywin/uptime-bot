@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth';
 import { Status } from "@prisma/client";
 import axios from "axios";
 
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let initialStatus = Status.pending;
+    const initialStatus = Status.pending;
     let responseStatus: Status = Status.down;
 
     try {
@@ -159,6 +159,7 @@ export async function DELETE(request: Request) {
         userId: session.user.id, // Ensures the user can only delete their own websites
       },
     });
+    console.log("Deleted website:", deletedWebsite);
 
     return NextResponse.json({ message: "Website deleted successfully" }, { status: 200 });
   } catch (error) {

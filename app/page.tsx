@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+import { authOptions } from '@/lib/auth';
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ export default async function Home() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-black">
       <div className="max-w-sm w-full p-8 rounded-xl shadow-2xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/30">
         <h1 className="flex justify-center text-3xl font-bold text-gray-100 mb-2">Uptime Monitor</h1>
-        <p className="flex justify-center text-gray-400 mb-6">Monitor your website's availability</p>
+        <p className="flex justify-center text-gray-400 mb-6">Monitor your website&apos;s availability</p>
 
         <div className="flex justify-center space-x-4">
           <Link

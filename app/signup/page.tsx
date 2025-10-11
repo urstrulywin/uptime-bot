@@ -60,8 +60,14 @@ export default function SignUp() {
           const data = response.data as { error?: string };
           setError(data.error || "Failed to sign up");
         }
-      } catch (err: any) {
-        setError(err.response?.data?.error || "An error occurred. Please try again.");
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          // It's an Axios error, now check for the specific response data
+          setError(err.response?.data?.error || "An error occurred. Please try again.");
+        } else {
+          // Handle non-Axios errors
+          setError("A network error occurred.");
+        }
       } finally {
         setIsLoading(false);
       }
