@@ -7,27 +7,15 @@ import axios from "axios";
 
 const MAX_WEBSITES_PER_USER = 20;
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("userId");
-
-  if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
-  }
-
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    if (session.user.id !== userId) {
-      return NextResponse.json(
-        { error: "Forbidden - You can only access your own websites" },
-        { status: 403 }
-      );
-    }
+    
+    const userId = session.user.id;
 
     const websites = await prisma.website.findMany({
       where: { userId },
@@ -100,7 +88,6 @@ export async function POST(request: Request) {
       );
     }
 
-    let initialStatus = Status.pending;
     let responseStatus: Status = Status.down;
 
     try {
@@ -117,7 +104,7 @@ export async function POST(request: Request) {
     const website = await prisma.website.create({
       data: {
         url: parsedUrl.toString(),
-        status: initialStatus,
+        status: responseStatus,
         userId,
         lastChecked: new Date(),
         uptimeLogs: {
@@ -153,7 +140,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Website ID is required" }, { status: 400 });
     }
 
-    const deletedWebsite = await prisma.website.delete({
+    await prisma.website.delete({
       where: {
         id: deleteId,
         userId: session.user.id, // Ensures the user can only delete their own websites

@@ -39,6 +39,7 @@ const WebsiteCardGrid = ({ initialWebsites, userId }: WebsiteCardGridProps) => {
         const response = await axios.get<Website[]>(`/api/websites?userId=${userId}`);
         setWebsites(response.data);
       } catch (err) {
+        console.error("Error fetching websites:", err);
         setError("Failed to load websites");
       } finally {
         setLoading(false);
